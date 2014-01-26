@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Intermeidate Assignment 3</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <style type="text/css">
+	    body {
+	            background-color:black;
+	    }
+    </style>
+</head>
+<body>
+		<svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+	<script>
+
+        //because we haven't learned how to do OOP in Javascript, we're going to just use regular functions.  Know that with OOP, there is even a better way to do this
+        var counter = 1;
+        var circles = {};
+        //function that will get the x and y coordinates of where the person clicked to pass to the create circle function.
+        document.onclick = function(e) { 
+          mainLoop(e.x,e.y);
+     	}
+
+     	//functions to convert HEX color to RGB format for playing changing each color seperatly based on 1-255.
+        function cutHex(h) {return (h.charAt(0)=="#") ? h.substring(1,7):h}
+		function hexToR(h) {return parseInt((cutHex(h)).substring(0,2),16)}
+		function hexToG(h) {return parseInt((cutHex(h)).substring(2,4),16)}
+		function hexToB(h) {return parseInt((cutHex(h)).substring(4,6),16)}
+
+        //read: http://stackoverflow.com/questions/3642035/jquerys-append-not-working-with-svg-element
+        //create an SVG element
+        function makeSVG(tag, attrs) {
+	        var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
+	        for (var k in attrs)
+	        {
+	            el.setAttribute(k, attrs[k]);
+	        }
+	        return el;
+    	}
+
+    	//creates circle
+        function createCircle(cx,cy,r)
+        {
+    		//generate that circles appear in different colors - generate random numbers from 1 -255 for each rgb number.
+    		var R = Math.floor((Math.random()*255)+1);
+    		var G = Math.floor((Math.random()*255)+1);
+    		var B = Math.floor((Math.random()*255)+1);
+
+            var circle = makeSVG('circle', 
+	                { cx: cx,
+	                  cy: cy,
+	                  r:  r,
+	                  id: 'circle_'+counter,
+	                  style: "fill:rgb("+ R +","+ G +"," + B + ")"                        
+	                });
+
+            //the key will be the HTML id and the value will be the radius
+            circles['circle_'+counter] = { radius: r,
+            								color: circle.style.fill};
+
+            counter++;
+            document.getElementById('svg').appendChild(circle);
+        }
+
+
+        //go through all the circles and update its radius and background color
+        function updateCircles()
+        {
+            for(circle in circles)
+            {
+        		//since color shows in HEX format need to convert it to RGB to be able to change each rgb number of original color to smaller number to affect fade.                		
+        		var color1 = hexToR(circles[circle].color);
+				var color2 = hexToG(circles[circle].color);
+				var color3 = hexToB(circles[circle].color);
+
+                var el = document.getElementById(circle);
+                // var color = 255-parseInt(circles[circle].radius/80*255);
+                var R = color1-parseInt(circles[circle].radius/80*255);
+                var G = color2-parseInt(circles[circle].radius/80*255);
+                var B = color3-parseInt(circles[circle].radius/80*255);
+
+                circles[circle].radius = circles[circle].radius+1;
+
+                //update the radius and the background color
+                el.setAttribute("r", circles[circle].radius);
+                // el.setAttribute("style", "fill: rgb("+color+","+color+","+color+"); ");
+                el.setAttribute("style", "fill: rgb("+R+","+G+","+B+"); ");
+
+                //if the circle radius is greater than 80, remove the dom and remove its value in the circles variable/object
+                if(circles[circle].radius > 80)
+                {
+                        document.getElementById('svg').removeChild(el);
+                        delete circles[circle];
+                }
+            }
+        }
+
+        //main loop
+        function mainLoop(clicked_x,clicked_y)
+	    {
+	            //create a new circle of radius 15 every time the loop is run - COMMENT THIS out if want to try wherever click that's where circle appear.
+	            createCircle(Math.random()*document.body.clientWidth, Math.random()*document.body.clientHeight, 15);
+
+	            //to have wherever you click that is where the circle will appear UNCOMMENT THIS
+	            // createCircle(clicked_x, clicked_y, 15);
+
+	            //update the circle size and background color
+	            updateCircles();        
+	    }
+        
+        //execute the mainLoop funtion every 30 milliseconds, if want to try wherever click that's where the circle appears COMMENT OUT this
+        setInterval(mainLoop, 300);
+
+	</script>
+</body>
+</html>
